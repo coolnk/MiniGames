@@ -80,6 +80,25 @@ const loadGame = async () => {
         <script>
           (function() {
             ${bundleCode}
+            
+            // Initialize Phaser game with the registered scene
+            if (window.PhaserGames && window.PhaserGames['${props.game.id}']) {
+              const config = {
+                type: Phaser.AUTO,
+                parent: 'game',
+                scale: {
+                  mode: Phaser.Scale.FIT,
+                  autoCenter: Phaser.Scale.CENTER_BOTH,
+                  width: window.innerWidth,
+                  height: window.innerHeight
+                },
+                scene: window.PhaserGames['${props.game.id}']
+              };
+              const game = new Phaser.Game(config);
+              console.log('✅ Phaser game initialized: ${props.game.id}');
+            } else {
+              console.error('❌ Scene not found in window.PhaserGames');
+            }
           })();
         <\/script>
       </body>

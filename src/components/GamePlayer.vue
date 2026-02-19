@@ -11,13 +11,19 @@
       <button @click="retry" class="retry-btn">Retry</button>
     </div>
 
-    <div v-else ref="gameContainer" class="game-container"></div>
+    <iframe
+      v-else
+      ref="gameIframe"
+      class="game-iframe"
+      :title="`${game.title} game`"
+      sandbox="allow-scripts allow-same-origin"
+    ></iframe>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
-import { type GameInfo, loadGameBundle } from '@/utils/gameLoader'
+import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
+import { type GameInfo } from '@/utils/gameLoader'
 
 interface Props {
   game: GameInfo
@@ -25,69 +31,72 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const gameContainer = ref<HTMLDivElement | null>(null)
+const gameIframe = ref<HTMLIFrameElement | null>(null)
 const loading = ref(true)
 const error = ref('')
-let phaserGame: any = null
 
 const loadGame = async () => {
-  if (!gameContainer.value) {
-    error.value = 'Game container not found'
-    loading.value = false
-    return
-  }
-
   loading.value = true
   error.value = ''
 
   try {
     console.log(`Loading game: ${props.game.id}`)
 
-    // Wait for Phaser to be available globally
-    if (!(window as any).Phaser) {
-      throw new Error('Phaser not loaded. Please check your internet connection.')
+    // Wait for iframe ref to be bound to DOM
+    await nextTick()
+
+    if (!gameIframe.value) {
+      throw new Error('Game iframe not found - ref not bound')
     }
 
-    // Clear previous game
-    gameContainer.value.innerHTML = ''
-
-    // Load the game bundle
-    await loadGameBundle(props.game.bundleUrl, props.game.id)
-
-    // Get the Phaser Scene class from the global registry
-    const PhaserGames = (window as any).PhaserGames
-    if (!PhaserGames || !PhaserGames[props.game.id]) {
-      throw new Error(`Game scene '${props.game.id}' not registered`)
+    // Fetch the game bundle
+    const response = await fetch(props.game.bundleUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to load game bundle: ${response.statusText}`)
     }
 
-    const SceneClass = PhaserGames[props.game.id]
-    const Phaser = (window as any).Phaser
+    const bundleCode = await response.text()
+    console.log(`Bundle loaded: ${bundleCode.length} bytes`)
 
-    // Create Phaser game instance
-    const config: Phaser.Types.Core.GameConfig = {
-      type: Phaser.AUTO,
-      parent: gameContainer.value,
-      width: gameContainer.value.clientWidth || 800,
-      height: gameContainer.value.clientHeight || 600,
-      physics: {
-        default: 'arcade',
-        arcade: {
-          gravity: { y: 0 },
-          debug: false
-        }
-      },
-      scene: [SceneClass],
-      scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-      }
+    // Create HTML content for the iframe
+    const iframeContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${props.game.title}</title>
+        <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"><\/script>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          html, body { width: 100%; height: 100%; }
+          body { overflow: hidden; }
+          #game { width: 100%; height: 100%; }
+        </style>
+      </head>
+      <body>
+        <div id="game"></div>
+        <script>
+          (function() {
+            ${bundleCode}
+          })();
+        <\/script>
+      </body>
+      </html>
+    `
+
+    // Write content to iframe
+    const iframeDoc = gameIframe.value.contentDocument
+    if (!iframeDoc) {
+      throw new Error('Cannot access iframe document')
     }
 
-    console.log(`Creating Phaser game instance for ${props.game.id}`)
-    phaserGame = new Phaser.Game(config)
+    iframeDoc.open()
+    iframeDoc.write(iframeContent)
+    iframeDoc.close()
 
+    console.log(`✅ Game loaded in iframe: ${props.game.id}`)
     loading.value = false
-    console.log(`✅ Game loaded: ${props.game.id}`)
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Unknown error loading game'
     console.error('Error loading game:', err)
@@ -106,14 +115,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // Cleanup is handled automatically when iframe is removed
   console.log(`Cleaning up game: ${props.game.id}`)
-  if (phaserGame) {
-    phaserGame.destroy(true)
-    phaserGame = null
-  }
-  if (gameContainer.value) {
-    gameContainer.value.innerHTML = ''
-  }
 })
 </script>
 
@@ -126,17 +129,14 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background: #f5f5f5;
   position: relative;
-}
-
-.game-container {
   width: 100%;
   height: 100%;
-  position: relative;
 }
 
-.game-instance {
+.game-iframe {
   width: 100%;
   height: 100%;
+  border: none;
 }
 
 .loading-state,

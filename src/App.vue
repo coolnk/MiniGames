@@ -52,8 +52,11 @@ const loadGames = async () => {
   error.value = ''
 
   try {
+    console.log('Starting to load games...')
     const manifest = await fetchGameManifest()
+    console.log('Manifest loaded:', manifest)
     games.value = manifest.games
+    console.log('Games set:', games.value.length, 'games')
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load games'
     console.error('Error loading games:', err)

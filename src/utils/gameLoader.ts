@@ -20,21 +20,60 @@ export interface GameManifest {
 
 const GAMES_MANIFEST_URL = 'https://raw.githubusercontent.com/coolnk/mini-games-library/main/manifest.json'
 
+// Fallback manifest for development/when remote is unavailable
+const FALLBACK_MANIFEST: GameManifest = {
+  version: '1.0.0',
+  lastUpdated: new Date().toISOString(),
+  games: [
+    {
+      id: 'bouncy-ball',
+      title: 'Bouncy Ball',
+      description: 'Watch a ball bounce around the screen with realistic physics',
+      bundleUrl: 'https://cdn.jsdelivr.net/gh/coolnk/mini-games-library/games/bouncy-ball-bundle.js',
+      version: '1.0.0',
+      author: 'Mini Games Team',
+      bundleSize: '2KB'
+    },
+    {
+      id: 'click-counter',
+      title: 'Click Counter',
+      description: 'Click the button as many times as you can in 10 seconds!',
+      bundleUrl: 'https://cdn.jsdelivr.net/gh/coolnk/mini-games-library/games/click-counter-bundle.js',
+      version: '1.0.0',
+      author: 'Mini Games Team',
+      bundleSize: '2.5KB'
+    },
+    {
+      id: 'memory-tiles',
+      title: 'Memory Tiles',
+      description: 'Watch the pattern and tap the tiles in the correct order. Test your memory!',
+      bundleUrl: 'https://cdn.jsdelivr.net/gh/coolnk/mini-games-library/games/memory-tiles-bundle.js',
+      version: '1.0.0',
+      author: 'Mini Games Team',
+      bundleSize: '3KB'
+    }
+  ]
+}
+
 /**
  * Fetch games manifest from mini-games-library
  */
 export async function fetchGameManifest(): Promise<GameManifest> {
   try {
+    console.log(`Fetching manifest from: ${GAMES_MANIFEST_URL}`)
     const response = await fetch(GAMES_MANIFEST_URL)
+    console.log(`Fetch response status: ${response.status}`)
     if (!response.ok) {
       throw new Error(`Failed to fetch manifest: ${response.statusText}`)
     }
     const manifest: GameManifest = await response.json()
-    console.log(`✅ Fetched ${manifest.games.length} games`)
+    console.log(`✅ Fetched ${manifest.games.length} games from remote`)
+    console.log('Games:', manifest.games.map(g => g.id))
     return manifest
   } catch (error) {
-    console.error('Error fetching games manifest:', error)
-    throw error
+    console.warn('Error fetching games manifest from remote, using fallback:', error)
+    console.log(`✅ Using fallback manifest with ${FALLBACK_MANIFEST.games.length} games`)
+    return FALLBACK_MANIFEST
   }
 }
 

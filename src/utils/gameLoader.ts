@@ -69,8 +69,11 @@ const FALLBACK_MANIFEST: GameManifest = {
  */
 export async function fetchGameManifest(): Promise<GameManifest> {
   try {
-    console.log(`Fetching manifest from: ${GAMES_MANIFEST_URL}`)
-    const response = await fetch(GAMES_MANIFEST_URL)
+    // Add timestamp to bust CDN cache and force fresh manifest
+    const cacheBreaker = new Date().getTime()
+    const url = `${GAMES_MANIFEST_URL}?t=${cacheBreaker}`
+    console.log(`Fetching manifest from: ${url}`)
+    const response = await fetch(url)
     console.log(`Fetch response status: ${response.status}`)
     if (!response.ok) {
       throw new Error(`Failed to fetch manifest: ${response.statusText}`)

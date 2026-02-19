@@ -1,0 +1,28 @@
+{
+  "name": "minigames",
+  "version": "1.0.0",
+  "description": "Vue 3 + Phaser.js mini games for Android via Capacitor",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:add": "capacitor add android",
+    "cap:build": "npm run build && capacitor copy android",
+    "cap:open": "capacitor open android",
+    "cap:run": "npm run build && capacitor sync android && capacitor open android"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "phaser": "^3.55.2",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vue-tsc": "^1.8.22"
+  }
+}

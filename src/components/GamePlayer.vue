@@ -51,7 +51,7 @@ const loadGame = async () => {
     }
 
     // Fetch the game bundle
-    const response = await fetch(props.game.bundleUrl)
+    const response = await fetch(props.game.bundleUrl + '?v=' + Date.now())
     if (!response.ok) {
       throw new Error(`Failed to load game bundle: ${response.statusText}`)
     }

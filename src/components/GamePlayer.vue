@@ -126,14 +126,17 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background: #f5f5f5;
   position: relative;
-  width: 100%;
-  height: 100%;
 }
 
 .game-container {
   width: 100%;
   height: 100%;
   position: relative;
+}
+
+.game-instance {
+  width: 100%;
+  height: 100%;
 }
 
 .loading-state,

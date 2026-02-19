@@ -1,23 +1,24 @@
 <template>
   <div class="game-player">
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading game...</p>
-    </div>
-
-    <div v-else-if="error" class="error-state">
-      <p>⚠️ Error loading game</p>
-      <p class="error-message">{{ error }}</p>
-      <button @click="retry" class="retry-btn">Retry</button>
-    </div>
-
+    <!-- Iframe is always rendered -->
     <iframe
-      v-else
       ref="gameIframe"
       class="game-iframe"
       :title="`${game.title} game`"
       sandbox="allow-scripts allow-same-origin"
     ></iframe>
+
+    <!-- Overlays -->
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading game...</p>
+    </div>
+
+    <div v-if="error" class="error-state">
+      <p>⚠️ Error loading game</p>
+      <p class="error-message">{{ error }}</p>
+      <button @click="retry" class="retry-btn">Retry</button>
+    </div>
   </div>
 </template>
 
@@ -137,6 +138,9 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .loading-state,
@@ -147,6 +151,13 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 20px;
   color: #666;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 10;
 }
 
 .spinner {

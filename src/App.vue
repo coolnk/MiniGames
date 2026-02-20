@@ -40,30 +40,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import GamePlayer from './components/GamePlayer.vue'
-import { fetchGameManifest, type GameInfo } from './utils/gameLoader'
+import { useGameManifest } from './composables/useGameManifest'
+import { type GameInfo } from './utils/gameLoader'
 
-const games = ref<GameInfo[]>([])
+const { games, loading, error, loadGames } = useGameManifest()
 const currentGame = ref<GameInfo | null>(null)
-const loading = ref(false)
-const error = ref('')
-
-const loadGames = async () => {
-  loading.value = true
-  error.value = ''
-
-  try {
-    console.log('🔄 Loading games...')
-    const manifest = await fetchGameManifest()
-    console.log('✅ Manifest loaded:', manifest)
-    games.value = manifest.games
-    console.log('✅ Games ready:', games.value.length)
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load games'
-    console.error('❌ Error:', err)
-  } finally {
-    loading.value = false
-  }
-}
 
 const selectGame = (game: GameInfo) => {
   console.log('▶️ Starting game:', game.id)

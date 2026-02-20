@@ -32,6 +32,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  complete: [score: number]
+}>()
 
 const gameIframe = ref<HTMLIFrameElement | null>(null)
 const { loading, error, loadGame, retry: retryLoad } = useGameLoader(props.game)

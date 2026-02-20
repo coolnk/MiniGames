@@ -1,81 +1,126 @@
 <template>
-  <div class="games-library">
-    <div v-if="!currentGame" class="game-menu">
-      <div class="header">
-        <h1>🎮 Games Library</h1>
-        <button @click="goBack" class="back-btn">← Back to Portal</button>
-      </div>
+  <ion-page>
+    <!-- Game Selection View -->
+    <div v-if="!currentGame">
+      <ion-header :translucent="true">
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-back-button default-href="/"></ion-back-button>
+          </ion-buttons>
+          <ion-title>🎮 Games</ion-title>
+        </ion-toolbar>
+      </ion-header>
 
-      <div v-if="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Loading games...</p>
-      </div>
+      <ion-content :fullscreen="true">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">🎮 Games Library</ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <div v-else-if="error" class="error">
-        <p>⚠️ {{ error }}</p>
-        <button @click="loadGames" class="retry-btn">Retry</button>
-      </div>
+        <div class="ion-padding">
+          <!-- Loading -->
+          <ion-card v-if="loading">
+            <ion-card-content class="ion-text-center">
+              <ion-spinner color="primary"></ion-spinner>
+              <p class="ion-margin-top">Loading games...</p>
+            </ion-card-content>
+          </ion-card>
 
-      <div v-else class="game-grid">
-        <div
-          v-for="game in games"
-          :key="game.id"
-          class="game-card"
-          @click="selectGame(game)"
-        >
-          <div class="game-card-content">
-            <span class="game-title">{{ game.title }}</span>
-            <span class="game-desc">{{ game.description }}</span>
-            <span class="game-size">{{ game.bundleSize }}</span>
-            <button
-              v-if="userStore.isGameFavorited(game.id)"
-              @click.stop="toggleFavorite(game.id)"
-              class="favorite-btn active"
-              title="Remove from favorites"
-            >
-              ⭐
-            </button>
-            <button
-              v-else
-              @click.stop="toggleFavorite(game.id)"
-              class="favorite-btn"
-              title="Add to favorites"
-            >
-              ☆
-            </button>
-          </div>
+          <!-- Error -->
+          <ion-card v-else-if="error" color="danger">
+            <ion-card-content>
+              <p>⚠️ {{ error }}</p>
+              <ion-button expand="block" @click="loadGames">Retry</ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Games Grid -->
+          <ion-grid v-else>
+            <ion-row>
+              <ion-col sizeLg="4" sizeMd="6" size="12" v-for="game in games" :key="game.id">
+                <ion-card button @click="selectGame(game)" class="game-card">
+                  <ion-card-header>
+                    <ion-card-title>{{ game.title }}</ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <p>{{ game.description }}</p>
+                    <ion-text color="medium">
+                      <p class="ion-text-sm">{{ game.bundleSize }}</p>
+                    </ion-text>
+                  </ion-card-content>
+                  <div class="favorite-overlay">
+                    <ion-button
+                      fill="clear"
+                      size="large"
+                      @click.stop="toggleFavorite(game.id)"
+                      :color="userStore.isGameFavorited(game.id) ? 'warning' : 'medium'"
+                    >
+                      <ion-icon :name="userStore.isGameFavorited(game.id) ? 'star' : 'star-outline'" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
-      </div>
+      </ion-content>
     </div>
 
-    <div v-else class="game-wrapper">
-      <div class="game-header">
-        <h2>{{ currentGame.title }}</h2>
-        <div class="header-actions">
-          <button
-            @click="toggleGameFavorite(currentGame.id)"
-            :class="{ active: userStore.isGameFavorited(currentGame.id) }"
-            class="favorite-btn-large"
-          >
-            {{ userStore.isGameFavorited(currentGame.id) ? '⭐ Favorited' : '☆ Add to Favorites' }}
-          </button>
-          <button @click="closeGame" class="close-btn">← Back</button>
-        </div>
-      </div>
-      <GamePlayer :game="currentGame" @complete="onGameComplete" />
+    <!-- Game Player View -->
+    <div v-else>
+      <ion-header :translucent="true">
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-back-button @click="closeGame" text="Back"></ion-back-button>
+          </ion-buttons>
+          <ion-title>{{ currentGame.title }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button
+              @click="toggleGameFavorite(currentGame.id)"
+              :color="userStore.isGameFavorited(currentGame.id) ? 'warning' : 'medium'"
+            >
+              <ion-icon :name="userStore.isGameFavorited(currentGame.id) ? 'star' : 'star-outline'" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <GamePlayer :game="currentGame" @complete="onGameComplete" />
+      </ion-content>
     </div>
-  </div>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import GamePlayer from '@/components/GamePlayer.vue'
 import { useGameManifest } from '@/composables/useGameManifest'
 import { useUserStore } from '@/stores/userStore'
 import { type GameInfo } from '@/utils/gameLoader'
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonButton,
+  IonButtons,
+  IonBackButton,
+  IonIcon,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonText,
+  IonSpinner
+} from '@ionic/vue'
+import { star, starOutline } from 'ionicons/icons'
 
-const router = useRouter()
 const userStore = useUserStore()
 const { games, loading, error, loadGames } = useGameManifest()
 
@@ -89,10 +134,6 @@ const selectGame = (game: GameInfo) => {
 const closeGame = () => {
   console.log('◀️ Back to games library')
   currentGame.value = null
-}
-
-const goBack = () => {
-  router.push('/')
 }
 
 const toggleFavorite = (gameId: string) => {
@@ -110,10 +151,31 @@ const onGameComplete = (score: number) => {
 }
 
 onMounted(() => {
-  console.log('📱 Games Library mounted')
+  console.log('🎮 Games Library mounted')
   loadGames()
 })
 </script>
+
+<style scoped>
+.game-card {
+  position: relative;
+  height: 100%;
+}
+
+.favorite-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+ion-card-title {
+  font-size: 16px;
+}
+
+ion-card-content p {
+  margin: 8px 0 4px 0;
+}
+</style>
 
 <style scoped>
 .games-library {

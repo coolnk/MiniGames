@@ -1,111 +1,178 @@
 <template>
-  <div class="portal-home">
-    <div class="header">
-      <h1>🎓 Kids Portal</h1>
-      <div class="user-section">
-        <span v-if="userStore.isAuthenticated" class="user-greeting">
-          Welcome, {{ userStore.userName }}! 👋
-        </span>
-        <button @click="navigateToProfile" class="profile-btn">
-          {{ userStore.isAuthenticated ? '👤 Profile' : '🔐 Login' }}
-        </button>
-      </div>
-    </div>
+  <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>🎓 Kids Portal</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="navigateToProfile">
+            <ion-icon v-if="userStore.isAuthenticated" slot="icon-only" name="person-circle"></ion-icon>
+            <ion-icon v-else slot="icon-only" name="lock-closed"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-    <div class="portal-content">
-      <div class="cards-grid">
-        <!-- Games Library Card -->
-        <div class="portal-card games-card" @click="navigateTo('games')">
-          <div class="card-icon">🎮</div>
-          <div class="card-content">
-            <h2>Games Library</h2>
-            <p>Play fun and educational games</p>
-            <div class="card-stats">
-              <span>{{ userStore.gamesCompleted }} played</span>
-            </div>
-          </div>
-          <div class="card-arrow">→</div>
+    <ion-content :fullscreen="true">
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <ion-title size="large">🎓 Kids Portal</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <div class="ion-padding">
+        <!-- Welcome Message -->
+        <div v-if="userStore.isAuthenticated" class="ion-text-center ion-margin-bottom">
+          <h2>Welcome, {{ userStore.userName }}! 👋</h2>
+          <p class="ion-text-medium ion-color-medium">Keep learning and have fun!</p>
         </div>
 
-        <!-- Books Library Card -->
-        <div class="portal-card books-card" @click="navigateTo('books')">
-          <div class="card-icon">📚</div>
-          <div class="card-content">
-            <h2>Books Library</h2>
-            <p>Read interesting stories and books</p>
-            <div class="card-stats">
-              <span>{{ userStore.booksRead }} read</span>
-            </div>
-          </div>
-          <div class="card-arrow">→</div>
+        <!-- Portal Cards Grid -->
+        <ion-grid>
+          <!-- Games Card -->
+          <ion-row class="ion-margin-bottom">
+            <ion-col sizeLg="4" sizeMd="6" size="12">
+              <ion-card button @click="navigateTo('games')" class="portal-card">
+                <ion-card-header>
+                  <div class="card-icon">🎮</div>
+                </ion-card-header>
+                <ion-card-content>
+                  <h2>Games Library</h2>
+                  <p class="ion-text-medium">Play fun and educational games</p>
+                  <ion-text color="primary">
+                    <p class="ion-text-center">{{ userStore.gamesCompleted }} played</p>
+                  </ion-text>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+
+            <!-- Books Card -->
+            <ion-col sizeLg="4" sizeMd="6" size="12">
+              <ion-card button @click="navigateTo('books')" class="portal-card">
+                <ion-card-header>
+                  <div class="card-icon">📚</div>
+                </ion-card-header>
+                <ion-card-content>
+                  <h2>Books Library</h2>
+                  <p class="ion-text-medium">Read interesting stories and books</p>
+                  <ion-text color="primary">
+                    <p class="ion-text-center">{{ userStore.booksRead }} read</p>
+                  </ion-text>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+
+            <!-- Activities Card -->
+            <ion-col sizeLg="4" sizeMd="6" size="12">
+              <ion-card button @click="navigateTo('activities')" class="portal-card">
+                <ion-card-header>
+                  <div class="card-icon">🎨</div>
+                </ion-card-header>
+                <ion-card-content>
+                  <h2>Activities</h2>
+                  <p class="ion-text-medium">Engage in creative and learning activities</p>
+                  <ion-text color="primary">
+                    <p class="ion-text-center">{{ userStore.activitiesCompleted }} done</p>
+                  </ion-text>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Progress Section -->
+        <div v-if="userStore.isAuthenticated" class="ion-margin-top">
+          <h3>📊 Your Progress</h3>
+          <ion-card>
+            <ion-card-content>
+              <ion-item lines="none">
+                <ion-label>Games Played</ion-label>
+                <ion-badge>{{ userStore.gamesCompleted }} / {{ totalGames }}</ion-badge>
+              </ion-item>
+              <ion-progress-bar :value="gameProgress / 100"></ion-progress-bar>
+
+              <ion-item lines="none" class="ion-margin-top">
+                <ion-label>Books Read</ion-label>
+                <ion-badge>{{ userStore.booksRead }} / {{ totalBooks }}</ion-badge>
+              </ion-item>
+              <ion-progress-bar :value="bookProgress / 100"></ion-progress-bar>
+
+              <ion-item lines="none" class="ion-margin-top">
+                <ion-label>Activities Done</ion-label>
+                <ion-badge>{{ userStore.activitiesCompleted }} / {{ totalActivities }}</ion-badge>
+              </ion-item>
+              <ion-progress-bar :value="activityProgress / 100"></ion-progress-bar>
+            </ion-card-content>
+          </ion-card>
         </div>
 
-        <!-- Activities Card -->
-        <div class="portal-card activities-card" @click="navigateTo('activities')">
-          <div class="card-icon">🎨</div>
-          <div class="card-content">
-            <h2>Activities</h2>
-            <p>Engage in creative and learning activities</p>
-            <div class="card-stats">
-              <span>{{ userStore.activitiesCompleted }} done</span>
-            </div>
-          </div>
-          <div class="card-arrow">→</div>
+        <!-- Tips Section -->
+        <div class="ion-margin-top">
+          <h3>💡 Learning Tips</h3>
+          <ion-card>
+            <ion-card-content>
+              <ion-list lines="none">
+                <ion-item>
+                  <ion-label>
+                    <p>🎯 Explore different categories to find what you enjoy</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p>⭐ Mark your favorites for quick access</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p>🏆 Complete activities to earn badges and progress</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p>🎮 Challenge yourself with games suited to your age</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
         </div>
       </div>
-
-      <!-- Quick Stats Section -->
-      <div v-if="userStore.isAuthenticated" class="stats-section">
-        <h3>📊 Your Progress</h3>
-        <div class="stats-bars">
-          <div class="stat-bar">
-            <div class="stat-label">Games Played</div>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: gameProgress + '%' }"></div>
-            </div>
-            <div class="stat-value">{{ userStore.gamesCompleted }} / {{ totalGames }}</div>
-          </div>
-          <div class="stat-bar">
-            <div class="stat-label">Books Read</div>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: bookProgress + '%' }"></div>
-            </div>
-            <div class="stat-value">{{ userStore.booksRead }} / {{ totalBooks }}</div>
-          </div>
-          <div class="stat-bar">
-            <div class="stat-label">Activities Done</div>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: activityProgress + '%' }"></div>
-            </div>
-            <div class="stat-value">{{ userStore.activitiesCompleted }} / {{ totalActivities }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Browse Tips -->
-      <div class="tips-section">
-        <h3>💡 Tips for Learning</h3>
-        <ul class="tips-list">
-          <li>Explore different categories to find what you enjoy</li>
-          <li>Mark your favorites for quick access</li>
-          <li>Complete activities to earn badges and progress</li>
-          <li>Challenge yourself with games suited to your age</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    </ion-content>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonButton,
+  IonButtons,
+  IonIcon,
+  IonText,
+  IonBadge,
+  IonProgressBar,
+  IonItem,
+  IonLabel,
+  IonList
+} from '@ionic/vue'
+import { personCircle, lockClosed } from 'ionicons/icons'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-// Calculate progress percentages
-const totalGames = 15 // TODO: Get from store
+// Calculate progress
+const totalGames = 15
 const totalBooks = 50
 const totalActivities = 30
 
@@ -131,262 +198,26 @@ const navigateToProfile = () => {
 </script>
 
 <style scoped>
-.portal-home {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.header {
-  padding: 30px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 2.5em;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.user-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.user-greeting {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.profile-btn {
-  padding: 10px 20px;
-  background: white;
-  color: #667eea;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.profile-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
-}
-
-.portal-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 40px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-  margin-bottom: 40px;
-}
-
 .portal-card {
-  background: white;
+  margin: 10px 0;
   border-radius: 12px;
-  padding: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  color: #333;
-  position: relative;
-}
-
-.portal-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-icon {
-  font-size: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 100px;
-  height: 100px;
-  background: #f5f5f5;
-  border-radius: 8px;
+  font-size: 48px;
+  text-align: center;
+  padding: 10px;
 }
 
-.card-content {
-  flex: 1;
-}
-
-.card-content h2 {
-  margin: 0;
-  font-size: 24px;
-  color: #333;
-}
-
-.card-content p {
-  margin: 8px 0 12px 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.card-stats {
-  display: flex;
-  gap: 15px;
-}
-
-.card-stats span {
-  font-size: 12px;
-  color: #999;
-  font-weight: 600;
-}
-
-.card-arrow {
-  font-size: 32px;
-  color: #667eea;
-}
-
-.games-card {
-  border-left: 4px solid #ff9800;
-}
-
-.books-card {
-  border-left: 4px solid #2196f3;
-}
-
-.activities-card {
-  border-left: 4px solid #4caf50;
-}
-
-.stats-section {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 30px;
-  backdrop-filter: blur(10px);
-}
-
-.stats-section h3 {
-  margin: 0 0 20px 0;
+ion-card h2 {
   font-size: 18px;
+  margin: 8px 0 4px 0;
 }
 
-.stats-bars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.stat-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.stat-label {
-  font-size: 12px;
-  opacity: 0.9;
-  font-weight: 600;
-}
-
-.progress-bar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #4caf50, #45a049);
-  transition: width 0.5s ease;
-}
-
-.stat-value {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.tips-section {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 25px;
-  backdrop-filter: blur(10px);
-}
-
-.tips-section h3 {
-  margin: 0 0 15px 0;
-  font-size: 18px;
-}
-
-.tips-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tips-list li {
-  padding-left: 25px;
-  position: relative;
+ion-card p {
   font-size: 14px;
-  opacity: 0.9;
-  line-height: 1.5;
-}
-
-.tips-list li:before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  font-weight: bold;
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 20px;
-    text-align: center;
-  }
-
-  .header h1 {
-    font-size: 1.8em;
-  }
-
-  .user-section {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .cards-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .portal-card {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .card-icon {
-    min-width: auto;
-  }
-
-  .card-arrow {
-    display: none;
-  }
+  color: var(--ion-color-medium);
+  margin: 4px 0;
 }
 </style>
